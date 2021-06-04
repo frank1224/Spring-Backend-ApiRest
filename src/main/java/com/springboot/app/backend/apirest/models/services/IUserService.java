@@ -1,4 +1,4 @@
-package com.springboot.app.backend.apirest.models.service;
+package com.springboot.app.backend.apirest.models.services;
 
 import java.util.List;
 
