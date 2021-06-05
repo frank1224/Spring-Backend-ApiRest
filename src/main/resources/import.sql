@@ -1,4 +1,4 @@
-
+/* Data Base db_springboot_backend */
 INSERT INTO db_springboot_backend.users (first_name, last_name, email, create_at) VALUES('John', 'Doe', 'john.doe@gmail.com', '2017-08-02');
 INSERT INTO db_springboot_backend.users (first_name, last_name, email, create_at) VALUES('Linus', 'Torvalds', 'linus.torvalds@gmail.com', '2017-08-03');
 INSERT INTO db_springboot_backend.users (first_name, last_name, email, create_at) VALUES('Jane', 'Doe', 'jane.doe@gmail.com', '2017-08-04');
