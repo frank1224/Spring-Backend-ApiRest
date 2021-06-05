@@ -14,6 +14,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name= "users")
@@ -28,12 +29,17 @@ public class User implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	@NotEmpty
+	@Size(min = 4, max = 10)
 	@Column(name = "first_name", nullable = false)
 	private String firstName;
 	
+	@NotEmpty
 	@Column(name = "last_name", nullable = false)
 	private String lastName;
 	
+	@NotEmpty
+	@Email
 	@Column(unique = true, nullable = false)
 	private String email;
 	

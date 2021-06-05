@@ -1,15 +1,20 @@
 package com.springboot.app.backend.apirest.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,7 +51,8 @@ public class UserRestController {
 	/**
 	 * 
 	 * @param id
-	 * @return specific user by id and also https status 500, 404, 200 depend on what happends.
+	 * @return specific user by id and also https status 500, 404, 200 depend on
+	 *         what happends.
 	 */
 	@GetMapping("/users/{id}")
 	public ResponseEntity<?> show(@PathVariable Long id) {
@@ -75,23 +81,35 @@ public class UserRestController {
 	/**
 	 * 
 	 * @param user
-	 * @return  user and  https status 201 if is successfull.
+	 * @return user and https status 201 if is successfull.
 	 */
 	@PostMapping("/users")
-	public ResponseEntity<?> create(@RequestBody User user) {
+	public ResponseEntity<?> create(@Valid @RequestBody User user, BindingResult result) {
 		User newUser = null;
-		
+
 		Map<String, Object> response = new HashMap<>();
-		
+
+		if (result.hasErrors()) {
+
+			List<String> errors = result.getFieldErrors().stream()
+					.map(error -> "El campo ".concat(error.getField()).concat(" ").concat(error.getDefaultMessage()))
+					.collect(Collectors.toList());
+
+			response.put("errors", errors);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+
+		}
+
 		try {
 			newUser = userService.save(user);
+			
 		} catch (DataAccessException e) {
 			response.put("mensaje", "error al insertar datos en la base de datos");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-		
+
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
+
 		response.put("mensaje", "El cliente ha sido creado con exito!!");
 		response.put("user", newUser);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
@@ -101,36 +119,46 @@ public class UserRestController {
 	 * 
 	 * @param user
 	 * @param id
-	 * @return current user changes.
+	 * @return current user changes and status.
 	 */
 	@ResponseStatus(HttpStatus.CREATED)
 	@PutMapping("/users/{id}")
-	public ResponseEntity<?> update(@RequestBody User user, @PathVariable Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody User user, BindingResult result, @PathVariable Long id) {
 		User currentUser = userService.findByid(id);
 		User userUpdate = null;
-		
+
 		Map<String, Object> response = new HashMap<>();
 		
+		if (result.hasErrors()) {
+
+			List<String> errors = result.getFieldErrors().stream()
+					.map(error -> "El campo ".concat(error.getField()).concat(" ").concat(error.getDefaultMessage()))
+					.collect(Collectors.toList());
+
+			response.put("errors", errors);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+
+		}
+
 		if (currentUser == null) {
-			response.put("mensaje", "Error: no se pudo editar, El cliente ID: ".concat(id.toString().concat(" no existe en la base de datos")));
+			response.put("mensaje", "Error: no se pudo editar, El cliente ID: "
+					.concat(id.toString().concat(" no existe en la base de datos")));
 
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		
-		
+
 		try {
 			currentUser.setFirstName(user.getFirstName());
 			currentUser.setLastName(user.getLastName());
 			currentUser.setEmail(user.getEmail());
 			currentUser.setCreateAt(user.getCreateAt());
-			
-			
+
 			userUpdate = userService.save(currentUser);
-			
+
 		} catch (DataAccessException e) {
 			response.put("mensaje", "error al actualizar el usuario en la base de datos");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-		
+
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "El cliente ha sido actualizado con exito!!");
@@ -140,25 +168,26 @@ public class UserRestController {
 	}
 
 	/**
-	 *  Delete user by id.
+	 * Delete user by id.
+	 * 
 	 * @param id
 	 */
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@DeleteMapping("/users/{id}")
 	public ResponseEntity<?> delete(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
-		
+
 		try {
 			userService.delete(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "error al eliminar el usuario en la base de datos");
 			response.put("error", e.getMessage().concat(": ").concat(e.getMostSpecificCause().getMessage()));
-		
+
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	
+
 		response.put("mensaje", "El cliente ha sido eliminado con exito!!");
-		
+
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
