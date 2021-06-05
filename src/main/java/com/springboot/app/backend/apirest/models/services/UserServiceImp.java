@@ -22,4 +22,22 @@ public class UserServiceImp implements IUserService {
 		return (List<User>) userDao.findAll();
 	}
 
+	@Transactional(readOnly = true)
+	@Override
+	public User findByid(Long id) {
+		return userDao.findById(id).orElse(null);
+	}
+
+	@Transactional
+	@Override
+	public User save(User user) {
+		return userDao.save(user);
+	}
+
+	@Transactional
+	@Override
+	public void delete(Long id) {
+		userDao.deleteById(id);
+	}
+
 }
